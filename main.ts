@@ -12,7 +12,7 @@
 // them), and dossier.json, written by the vendored make.fun library so
 // the gate's own rebuild matches it byte for byte.
 
-import { cpSync, existsSync, mkdirSync, rmSync, writeFileSync } from 'node:fs';
+import { cpSync, existsSync, mkdirSync, readdirSync, rmSync, writeFileSync } from 'node:fs';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { buildDossier } from './vendor/makefun-app.ts';
@@ -40,9 +40,13 @@ function handIn(): void {
   const out = outputDir();
 
   // Start from a clean directory so a second run writes the same bytes
-  // as the first, even when an earlier run left files behind.
-  rmSync(out, { recursive: true, force: true });
+  // as the first, even when an earlier run left files behind. Remove
+  // the directory's contents, not the directory itself: the grader
+  // mounts /output as a volume, and a mount point cannot be removed.
   mkdirSync(out, { recursive: true });
+  for (const entry of readdirSync(out)) {
+    rmSync(join(out, entry), { recursive: true, force: true });
+  }
 
   cpSync(join(root, 'app'), join(out, 'app'), { recursive: true });
 
