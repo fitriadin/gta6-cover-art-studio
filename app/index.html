@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="en" data-type="software" data-kind="gaming">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>GTA 6 Cover Studio — turn your photo into poster cover art</title>
+<meta name="description" content="A free offline cover maker: drop in your photos, pick a multi-panel poster layout and a Vice City sunset grade, letter your caption, export a PNG to share.">
+<meta name="page-type" content="software">
+<meta name="site-kind" content="gaming">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='6' fill='%23ff6b3d'/%3E%3Ctext x='16' y='23' font-family='Arial Narrow,sans-serif' font-size='17' font-weight='bold' text-anchor='middle' fill='%23fff6e8'%3ENC%3C/text%3E%3C/svg%3E">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<header class="topbar">
+  <div class="brand">
+    <span class="brand-mark" aria-hidden="true">NC</span>
+    <span class="brand-name">Neon Coast <em>Cover Studio</em></span>
+    <span class="brand-sub">GTA-style poster maker</span>
+  </div>
+  <div class="top-actions">
+    <button id="undoBtn" class="btn btn-ghost" type="button" title="Undo (Ctrl+Z)" aria-label="Undo">Undo</button>
+    <button id="redoBtn" class="btn btn-ghost" type="button" title="Redo (Ctrl+Shift+Z)" aria-label="Redo">Redo</button>
+    <button id="exportBtn" class="btn btn-primary" type="button">Export PNG</button>
+  </div>
+</header>
+
+<main class="studio">
+  <aside class="rail" aria-label="Cover controls">
+    <section class="rail-section" aria-labelledby="photosHeading">
+      <h2 id="photosHeading">1 · Photos</h2>
+      <button id="addPhotosBtn" class="btn btn-add" type="button">Add photos from your machine</button>
+      <p class="section-note">JPG or PNG. Your photos never leave this browser.</p>
+      <div id="photoTray" class="photo-tray" role="list" aria-label="Your photos"></div>
+      <div class="sample-row">
+        <span class="sample-label">No photo handy?</span>
+        <button id="sampleBoulevardBtn" class="btn btn-small" type="button">Try Boulevard</button>
+        <button id="samplePierBtn" class="btn btn-small" type="button">Try Pier</button>
+      </div>
+      <button id="fillAllBtn" class="btn btn-small" type="button">Fill every panel with the selected photo</button>
+    </section>
+
+    <section class="rail-section" aria-labelledby="layoutHeading">
+      <h2 id="layoutHeading">2 · Layout</h2>
+      <div id="layoutPicker" class="option-grid" role="radiogroup" aria-label="Cover layout"></div>
+    </section>
+
+    <section class="rail-section" aria-labelledby="gradeHeading">
+      <h2 id="gradeHeading">3 · Colour grade</h2>
+      <div id="gradePicker" class="option-grid" role="radiogroup" aria-label="Colour grade"></div>
+    </section>
+
+    <section class="rail-section" aria-labelledby="captionHeading">
+      <h2 id="captionHeading">4 · Caption</h2>
+      <label class="field-label" for="titleInput">Title</label>
+      <input id="titleInput" class="text-input" type="text" maxlength="24" value="SUNSET HEIST" autocomplete="off">
+      <label class="field-label" for="subtitleInput">Subtitle / tagline</label>
+      <input id="subtitleInput" class="text-input" type="text" maxlength="48" value="a neon coast story" autocomplete="off">
+      <label class="field-label" for="placeInput">Place tag</label>
+      <input id="placeInput" class="text-input" type="text" maxlength="20" value="NEON COAST" autocomplete="off">
+      <fieldset class="lettering-field">
+        <legend>Lettering</legend>
+        <div id="letteringPicker" class="option-row" role="radiogroup" aria-label="Lettering style"></div>
+      </fieldset>
+      <label class="field-label" for="titleSizeInput">Title size <span id="titleSizeValue">100%</span></label>
+      <input id="titleSizeInput" class="range-input" type="range" min="70" max="140" value="100" step="5">
+      <label class="check-row">
+        <input id="badgeToggle" type="checkbox" checked>
+        <span>Show star badge + place ribbon</span>
+      </label>
+      <label class="field-label" for="starsInput">Stars</label>
+      <select id="starsInput" class="select-input">
+        <option value="1">1 star</option>
+        <option value="2">2 stars</option>
+        <option value="3">3 stars</option>
+        <option value="4">4 stars</option>
+        <option value="5" selected>5 stars</option>
+      </select>
+    </section>
+
+    <section class="rail-section" aria-labelledby="sizeHeading">
+      <h2 id="sizeHeading">5 · Export size</h2>
+      <div id="sizePicker" class="option-grid option-grid-sizes" role="radiogroup" aria-label="Export size"></div>
+      <p class="section-note">The preview below is the exact cover, at the size you export.</p>
+    </section>
+
+    <section class="rail-section" aria-labelledby="panelHeading">
+      <h2 id="panelHeading">Selected panel</h2>
+      <p id="panelInfo" class="section-note">No panel selected yet.</p>
+      <label class="field-label" for="zoomInput">Zoom <span id="zoomValue">100%</span></label>
+      <input id="zoomInput" class="range-input" type="range" min="100" max="300" value="100" step="5">
+      <div class="panel-actions">
+        <button id="resetCropBtn" class="btn btn-small" type="button">Reset crop</button>
+        <button id="clearPanelBtn" class="btn btn-small" type="button">Empty this panel</button>
+      </div>
+    </section>
+  </aside>
+
+  <section class="stage" aria-label="Cover preview">
+    <div id="dropZone" class="canvas-wrap">
+      <canvas id="previewCanvas" width="1080" height="1350" aria-label="Live cover preview"></canvas>
+      <div id="emptyState" class="empty-state">
+        <p class="empty-title">Your cover starts with a photo</p>
+        <p class="empty-body">Add a photo from your machine, or try one of the samples — then pick a layout and a grade and export the PNG.</p>
+        <button id="emptySampleBtn" class="btn btn-primary" type="button">Try a sample photo</button>
+      </div>
+    </div>
+    <div id="panelStrip" class="panel-strip" aria-label="Panels"></div>
+    <p class="stage-hint">Click a panel to select it · drag the photo to reposition · scroll to zoom · drop image files anywhere to add them</p>
+  </section>
+</main>
+
+<input id="fileInput" type="file" accept="image/png,image/jpeg,image/webp" multiple hidden>
+<div id="toast" class="toast" role="status" aria-live="polite"></div>
+<script type="module" src="src/main.js"></script>
+</body>
+</html>
